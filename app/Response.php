@@ -26,7 +26,8 @@ class Response
         $this->checkIfPathIsAllowed($path);
 
         try {
-            if (!$this->cache()->contains($path)) {
+            $key = $this->getCacheKey($path);
+            if (!$this->cache()->contains($key)) {
                 $this->fetchFileContent($path);
             }
 
@@ -44,7 +45,8 @@ class Response
         $client   = $this->client();
         $response = $client->get($path);
 
-        if (!$this->cacheFileContent($path, $response->getBody())) {
+        $key = $this->getCacheKey($path);
+        if (!$this->cacheFileContent($key, $response->getBody())) {
             throw new Exception("Failed to cache file content.");
         }
     }
@@ -96,6 +98,14 @@ class Response
         }
 
         $path = trim($path, "/");
+
         return preg_match('#^' . $pattern . '\z#u', $path) === 1;
+    }
+
+    protected function getCacheKey(string $path): string
+    {
+        $host = parse_url($this->config["origin"]["base_uri"], PHP_URL_HOST);
+
+        return $host . "::" . $path;
     }
 }
