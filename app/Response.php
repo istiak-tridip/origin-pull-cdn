@@ -2,7 +2,12 @@
 
 namespace App;
 
+use App\Responses\ErrorResponse;
+use App\Responses\SuccessResponse;
 use Doctrine\Common\Cache\FilesystemCache;
+use Exception;
+use GuzzleHttp\Client;
+use Throwable;
 
 class Response
 {
@@ -17,7 +22,48 @@ class Response
 
     public function send(string $path): void
     {
-        // todo
+        try {
+            if (!$this->cache()->contains($path)) {
+                $this->fetchFileContent($path);
+            }
+
+            $content  = $this->cache()->fetch($path);
+            $response = new SuccessResponse($content);
+            $response->send();
+        } catch (Throwable $exception) {
+            $response = new ErrorResponse($exception);
+            $response->send();
+        }
+    }
+
+    protected function fetchFileContent(string $path): void
+    {
+        $client   = $this->client();
+        $response = $client->get($path);
+
+        if (!$this->cacheFileContent($path, $response->getBody())) {
+            throw new Exception("Failed to cache file content.");
+        }
+    }
+
+    protected function cacheFileContent(string $path, string $contents): bool
+    {
+        return $this->cache()->save(
+            $path,
+            $contents,
+            $this->config["cache"]["lifetime"]
+        );
+    }
+
+    protected function client(): Client
+    {
+        return new Client([
+            "base_uri" => $this->config["origin"]["base_uri"],
+            "timeout"  => $this->config["origin"]["timeout"],
+            "headers"  => [
+                "User-Agent" => "OPCDN-BOT/0.1.0",
+            ],
+        ]);
     }
 
     protected function cache(): FilesystemCache

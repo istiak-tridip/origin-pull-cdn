@@ -5,10 +5,10 @@ error_reporting(E_ALL);
 ini_set("display_errors", "On");
 
 /**
- * Get the config & requested path without the query string
+ * Get the config & requested path
  */
 $config  = require __DIR__ . "/../config.php";
-$urlPath = str_replace("?" . $_SERVER['QUERY_STRING'], "", $_SERVER['REQUEST_URI']);
+$urlPath = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 
 /**
  * Run The Application
