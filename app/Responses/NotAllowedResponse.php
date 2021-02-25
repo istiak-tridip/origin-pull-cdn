@@ -2,17 +2,15 @@
 
 namespace App\Responses;
 
-use GuzzleHttp\Exception\RequestException;
 use Symfony\Component\HttpFoundation\Response;
-use Throwable;
 
-class ErrorResponse implements ResponseInterface
+class NotAllowedResponse implements ResponseInterface
 {
-    private Throwable $exception;
+    private string $path;
 
-    public function __construct(Throwable $exception)
+    public function __construct(string $path)
     {
-        $this->exception = $exception;
+        $this->path = $path;
     }
 
     public function send(): void
@@ -22,20 +20,17 @@ class ErrorResponse implements ResponseInterface
         $response->setStatusCode($this->getStatusCode());
 
         $response->send();
+        exit;
     }
 
     public function getContent(): string
     {
-        return Response::$statusTexts[$this->getStatusCode()] ?? "Unknown Error";
+        return "Path ({$this->path}) is not allowed.";
     }
 
     public function getStatusCode(): int
     {
-        if ($this->exception instanceof RequestException && $this->exception->hasResponse()) {
-            $statusCode = $this->exception->getResponse()->getStatusCode();
-        }
-
-        return $statusCode ?? Response::HTTP_FAILED_DEPENDENCY;
+        return Response::HTTP_BAD_REQUEST;
     }
 
     public function getContentType(): string

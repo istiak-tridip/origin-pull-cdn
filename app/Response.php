@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Responses\ErrorResponse;
+use App\Responses\NotAllowedResponse;
 use App\Responses\SuccessResponse;
 use Doctrine\Common\Cache\FilesystemCache;
 use Exception;
@@ -22,6 +23,8 @@ class Response
 
     public function send(string $path): void
     {
+        $this->checkIfPathIsAllowed($path);
+
         try {
             if (!$this->cache()->contains($path)) {
                 $this->fetchFileContent($path);
@@ -70,5 +73,31 @@ class Response
     {
         return $this->cache ??=
             new FilesystemCache($this->config["cache"]["directory"], ".it");
+    }
+
+    protected function checkIfPathIsAllowed(string $path): void
+    {
+        if (empty($paths = $this->config["origin"]["paths"])) {
+            return;
+        }
+
+        foreach ($paths as $pattern) {
+            if ($this->pathMatches($pattern, $path) === false) {
+                $response = new NotAllowedResponse($path);
+                $response->send();
+            }
+        }
+    }
+
+    protected function pathMatches(string $pattern, string $path): bool
+    {
+        if ($pattern === $path) {
+            return true;
+        }
+
+        $path    = trim($path, "/");
+        $pattern = preg_quote($pattern, '#');
+
+        return preg_match('#^' . $pattern . '\z#u', $path) === 1;
     }
 }
