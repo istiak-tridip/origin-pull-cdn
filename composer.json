@@ -3,7 +3,8 @@
     "description": "A simple implementation of \"Origin Pull\" CDN with cache support.",
     "type": "project",
     "require": {
-        "php": "^7.4|^8.0"
+        "php": "^7.4|^8.0",
+        "doctrine/cache": "^1.10"
     },
     "autoload": {
         "psr-4": {
