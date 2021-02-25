@@ -1,0 +1,17 @@
+{
+    "name": "istiak/origin-pull-cdn",
+    "description": "A simple implementation of \"Origin Pull\" CDN with cache support.",
+    "type": "project",
+    "require": {
+        "php": "^7.4|^8.0",
+        "ext-fileinfo": "*",
+        "doctrine/cache": "^1.10",
+        "guzzlehttp/guzzle": "^7.2",
+        "symfony/http-foundation": "^5.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}
