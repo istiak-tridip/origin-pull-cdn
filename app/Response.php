@@ -95,9 +95,7 @@ class Response
             return true;
         }
 
-        $path    = trim($path, "/");
-        $pattern = preg_quote($pattern, '#');
-
+        $path = trim($path, "/");
         return preg_match('#^' . $pattern . '\z#u', $path) === 1;
     }
 }
