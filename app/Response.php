@@ -31,7 +31,7 @@ class Response
                 $this->fetchFileContent($path);
             }
 
-            $content  = $this->cache()->fetch($path);
+            $content  = $this->cache()->fetch($key);
             $response = new SuccessResponse($content);
             $response->send();
         } catch (Throwable $exception) {
@@ -84,11 +84,13 @@ class Response
         }
 
         foreach ($paths as $pattern) {
-            if ($this->pathMatches($pattern, $path) === false) {
-                $response = new NotAllowedResponse($path);
-                $response->send();
+            if ($this->pathMatches($pattern, $path) === true) {
+                return;
             }
         }
+
+        $response = new NotAllowedResponse($path);
+        $response->send();
     }
 
     protected function pathMatches(string $pattern, string $path): bool
@@ -106,6 +108,6 @@ class Response
     {
         $host = parse_url($this->config["origin"]["base_uri"], PHP_URL_HOST);
 
-        return $host . "::" . $path;
+        return md5($host . "::" . $path);
     }
 }
